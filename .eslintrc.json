@@ -1,0 +1,99 @@
+{
+    "extends": [
+        "eslint:recommended",
+        "google"
+    ],
+    "env": {
+        "es6": true,
+        "browser": true,
+        "commonjs": true,
+        "node": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "impliedStrict": true,
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true,
+            "arrowFunctions": true
+        }
+    },
+    "rules": {
+        "no-console": 0,
+        "no-var": 0,
+        "one-var": [
+            2,
+            {
+                "var": "always"
+            }
+        ],
+        "max-len": [
+            2,
+            80,
+            2,
+            {
+                "ignoreUrls": true,
+                "ignoreComments": false
+            }
+        ],
+        "newline-before-return": "error",
+        "comma-dangle": [
+            "error",
+            "never"
+        ],
+        "indent": [
+            2,
+            2,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "space-infix-ops": [
+            "error",
+            {
+                "int32Hint": false
+            }
+        ],
+        "padding-line-between-statements": [
+            "error",
+            {
+                "blankLine": "always",
+                "prev": [
+                    "const",
+                    "let",
+                    "var"
+                ],
+                "next": "*"
+            },
+            {
+                "blankLine": "any",
+                "prev": [
+                    "const",
+                    "let",
+                    "var"
+                ],
+                "next": [
+                    "const",
+                    "let",
+                    "var"
+                ]
+            },
+            {
+                "blankLine": "always",
+                "prev": "*",
+                "next": [
+                    "if",
+                    "try",
+                    "do",
+                    "while",
+                    "for",
+                    "function",
+                    "switch"
+                ]
+            }
+        ]
+    },
+    "globals": {
+        "__dirname": true
+    }
+}

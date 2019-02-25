@@ -6,11 +6,26 @@
     <meta name="Description" content="<%= htmlWebpackPlugin.options.title %>">
     <meta name="theme-color" content="#000000" />
     <title><%= htmlWebpackPlugin.options.title %></title>
-    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon.ico">
 </head>
 
 <body>
-    <h1>HOLA MUNDO</h1>
+    <div search-component>
+        <h1>HOLA MUNDO</h1>
+        <div>
+            <form class="js-orgForm">
+                <label for="organization"> Search by organization:</label>
+                <input class="js-formInput js-contactName" id="organization" type="text" placeholder="e.g. payworks"/>
+                <button type="submit">Search</button>
+            </form>
+            <div filter-component>
+                <div class="js-filterForm"></div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <ul class="js-listContainer" results-component></ul>
+    </div>
 </body>
 
 </html>

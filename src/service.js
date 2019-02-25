@@ -1,4 +1,4 @@
-const makeRequest = (method, url) => {
+export const makeRequest = (method, url) => {
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
 
@@ -22,9 +22,3 @@ const makeRequest = (method, url) => {
     request.send();
   });
 };
-
-makeRequest('GET', 'https://api.github.com/users/diegofelipemoreno/repos').then((datums) => {
-  console.log(datums);
-}).catch((err) => {
-  console.error('Augh, there was an error!', err.statusText);
-});

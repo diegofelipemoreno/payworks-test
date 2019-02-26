@@ -39,7 +39,6 @@ export class FilterComponent {
   listenEvents() {
     this.filterForm.addEventListener(Events.SUBMIT, (event) => {
       event.preventDefault();
-
       this.controller(event.target.id);
     });
   }
@@ -67,28 +66,35 @@ export class FilterComponent {
         }
       });
 
-      this.currentData.filter((elem) => {
-        elem.languages_url.forEach((langElem) => {
-          languagesToFilter.forEach((langFil) => {
-            if (langElem === langFil) {
-              filteredData.push(elem);
-            }
+      if (this.currentData.length) {
+        this.currentData.filter((elem) => {
+          elem.languages_url.forEach((langElem) => {
+            languagesToFilter.forEach((langFil) => {
+              if (langElem === langFil) {
+                filteredData.push(elem);
+              }
+            });
           });
         });
-      });
+      }
 
       this.results.render(filteredData);
     };
 
     /**
     * Filter current Data by forks numbers
+    * @private
     * @param {string} idForm to filter data
     */
     const filterByForks_ = (idForm) => {
       const filterInput = this.filterForm.querySelector(
         `#${idForm} ${Selectors.INPUT_FILTER}`);
-      let forksNumber = filterInput.value || 0,
+      let forksNumber = filterInput.value,
         filteredData = [];
+
+      if (forksNumber === '') {
+        return;
+      }
 
       forksNumber = parseInt(forksNumber);
       filteredData = this.currentData.filter((elem) => {
@@ -130,12 +136,18 @@ export class FilterComponent {
   * @param {set} filterByData data to filter
   */
   setControlFilter(filterByAttr, filterByData) {
+    if (!filterByAttr && !filterByData) {
+      this.resetControls_();
+
+      return;
+    }
+
     new Promise((resolve) => {
       this.resetControls_();
       utils.requestAnimationUtil(() => resolve(), 100);
     }).then(() => {
       let byLanguage =
-      `<form id="${filterByAttr}">
+      `<hr><form id="${filterByAttr}">
           <label for="${filterByAttr}">
             Filter by ${filterByAttr}
           </label>
@@ -154,7 +166,7 @@ export class FilterComponent {
           value="${elem}">${elem}<br>`;
         });
 
-        byLanguage += '<button type="submit">filter</button><form><br><hr>';
+        byLanguage += '<button type="submit">filter</button><form><br>';
 
         this.filterForm.innerHTML += byLanguage;
       };
@@ -167,7 +179,7 @@ export class FilterComponent {
         byLanguage += `<input class="${Classname.INPUT_FILTER}" type="number"
                         name="forks"
                         value=""/><br>
-        <button type="submit">filter</button><form><br><hr>`;
+        <button type="submit">filter</button><form><br>`;
 
         this.filterForm.innerHTML += byLanguage;
       };

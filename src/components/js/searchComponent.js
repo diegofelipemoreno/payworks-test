@@ -36,7 +36,7 @@ export class SearchComponent {
     /**
      * Data organization filtered to render
      */
-    this.dataToRender = [];
+    this.dataState = [];
 
     /**
     * organization`s languages projects
@@ -68,27 +68,105 @@ export class SearchComponent {
       (requestData) => {
         return requestData;
       }).catch((err) => {
-      console.error('Augh, there was an error!', err.statusText);
+      console.error('GitHub user does not exist!', err.statusText);
+      utils.requestAnimationUtil(() => {
+        this.resetApp();
+      }, 300);
 
       return [];
     });
   }
 
   /**
-  * Make request to Get project languagues
-  * @param {string} urlQuery 'languages_url' property on this.dataToRender
-  * @return {object} requestData
+  * Callback for dataState
   */
-  requestLanguageProject_(urlQuery) {
-    const fullQuery = `${urlQuery}${Constants.SUFFIX_TOKENS}`;
+  searchCallback() {
+    this.filter.setData(this.dataState);
+    this.results.render(this.dataState);
+    this.assignFiltersControl([
+      [FilterAttributes.LANGUAGES, this.languagesOrg],
+      [FilterAttributes.FORKS]
+    ]);
+  }
 
-    return makeRequest('GET', fullQuery).then((requestData) => {
-      return requestData;
-    }).catch((err) => {
-      console.error('Augh, there was an error!', err.statusText);
+  /**
+  * Sets dataState array from request
+  */
+  setDataState() {
+    this.dataState = [];
 
-      return {};
-    });
+    if (this.formInput.value) {
+      this.requestOrg(this.formInput.value).then((result) => {
+        this.dataOrg = result;
+
+        this.filterData_().then(() => {
+          this.filterDataLang_().then(() => {
+            this.searchCallback();
+          });
+        });
+      });
+    }
+  }
+
+  /**
+  * Sets array languages on dataState['languages_url']
+  * @private
+  * @return {object} Promise
+  */
+  filterDataLang_() {
+    const setLangData_ = (projectObj, langObj) => {
+      projectObj['languages_url'] =
+        Object.keys(langObj).map((index) => {
+          this.languagesOrg.add(index);
+
+          return index;
+        });
+    };
+
+    if (this.dataState.length) {
+      return new Promise((resolve) => {
+        const arrayUrls = this.dataState.map((elem) => {
+          return `${elem.languages_url}${Constants.SUFFIX_TOKENS}`;
+        });
+
+        utils.loadAsset(arrayUrls).then((values) => {
+          this.dataState.forEach((elem, index) => {
+            setLangData_(elem, values[index]);
+            resolve();
+          });
+        });
+      });
+    }
+  }
+
+  /**
+  * set array filtered data on dataState
+  * @private
+  * @return {object} Promise
+  */
+  filterData_() {
+    if (this.dataOrg.length) {
+      this.languagesOrg = new Set();
+
+      return new Promise((resolve) => {
+        this.dataOrg = JSON.parse(this.dataOrg);
+        this.dataState = this.dataOrg.reduce((previous, actual) => {
+          let currentProject = {};
+
+          currentProject = {
+            forks_count: actual.forks_count,
+            full_name: actual.full_name,
+            languages_url: actual.languages_url,
+            login_html_url: actual.owner.html_url,
+            name: actual.name,
+            stargazers_count: actual.stargazers_count
+          };
+
+          return previous.concat(currentProject);
+        }, []).sort((a, b) => b.stargazers_count - a.stargazers_count);
+        resolve();
+      });
+    }
   }
 
   /**
@@ -97,65 +175,19 @@ export class SearchComponent {
   listenEvents() {
     this.orgForm.addEventListener(Events.SUBMIT, (event) => {
       event.preventDefault();
-
-      if (this.formInput.value) {
-        this.requestOrg(this.formInput.value).then((result) => {
-          this.dataOrg = result;
-
-          new Promise((resolve) => {
-            this.filterDataToRender_();
-            resolve();
-          }).then(() => {
-            utils.requestAnimationUtil(() => {
-              if (this.dataToRender.length) {
-                this.filter.setData(this.dataToRender);
-                this.results.render(this.dataToRender);
-                this.assignFiltersControl([
-                  [FilterAttributes.LANGUAGES, this.languagesOrg],
-                  [FilterAttributes.FORKS]
-                ]);
-              }
-            }, 400);
-          });
-        });
-      }
+      this.setDataState();
     });
   }
 
   /**
-  * filtered data for render view
-  * @private
+  * Resets all App model data / markup
   */
-  filterDataToRender_() {
-    this.dataOrg = JSON.parse(this.dataOrg);
-    this.languagesOrg = new Set();
-
-    if (this.dataOrg.length) {
-      this.dataToRender = this.dataOrg.reduce((previous, actual) => {
-        let currentProject = {};
-
-        currentProject = {
-          forks_count: actual.forks_count,
-          full_name: actual.full_name,
-          login_html_url: actual.owner.html_url,
-          name: actual.name,
-          stargazers_count: actual.stargazers_count
-        };
-
-        this.requestLanguageProject_(actual.languages_url).then((result) => {
-          const stringToObject = JSON.parse(result);
-
-          currentProject['languages_url'] =
-            Object.keys(stringToObject).map((index) => {
-              this.languagesOrg.add(index);
-
-              return index;
-            });
-        });
-
-        return previous.concat(currentProject);
-      }, []).sort((a, b) => b.stargazers_count - a.stargazers_count);
-    }
+  resetApp() {
+    this.dataOrg = [];
+    this.dataState = [];
+    this.filter.setData([]);
+    this.results.render([]);
+    this.assignFiltersControl([]);
   }
 
   /**
@@ -163,9 +195,13 @@ export class SearchComponent {
   * @param {array} arrayFilter [ controlType, controlData ]
   */
   assignFiltersControl(arrayFilter) {
-    arrayFilter.forEach((elem) => {
-      this.filter.setControlFilter(elem[0], elem[1]);
-    });
+    if (arrayFilter.length) {
+      arrayFilter.forEach((elem) => {
+        this.filter.setControlFilter(elem[0], elem[1]);
+      });
+    } else {
+      this.filter.setControlFilter();
+    }
   }
 
   /**

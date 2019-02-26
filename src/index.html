@@ -10,24 +10,22 @@
 </head>
 
 <body>
-    <div search-component>
-        <h1>HOLA MUNDO</h1>
-        <div>
+    <h1>Payworks Test</h1>
+    <div search-component class="main-container">
+        <div class="search-module">
             <form class="js-orgForm">
-                <fieldset>
-                  <label for="organization"> Search by organization:</label>
-                  <input class="js-formInput" id="organization" type="text" placeholder="e.g. payworks"/>
-                  <button type="submit">Search</button>
-                </fieldset>
+                <label for="organization"> Search by organization:</label>
+                <input class="js-formInput" id="organization" type="text" placeholder="e.g. payworks"/>
+                <button type="submit">Search</button>
             </form>
-            <hr>
             <div filter-component>
                 <div class="js-filterForm"></div>
             </div>
         </div>
-    </div>
-    <div>
-        <ul class="js-listContainer" results-component></ul>
+        <div paginator-component class="results-module">
+            <ul class="js-listContainer" results-component></ul>
+            <div class="js-listPaginator paginator"></div>
+        </div>
     </div>
 </body>
 

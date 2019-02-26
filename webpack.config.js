@@ -1,6 +1,7 @@
 const webpack = require('webpack'),
   path = require('path'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
+  ExtractTextPlugin = require('extract-text-webpack-plugin'),
 
   configProject = {
     entryJs: {
@@ -15,6 +16,7 @@ const webpack = require('webpack'),
   };
 
 module.exports = {
+  mode: 'development',
   entry: {
     index: configProject.entryJs.app
   },
@@ -30,6 +32,13 @@ module.exports = {
         use: {
           loader: 'babel-loader'
         }
+      },
+      {
+        test: /\.scss$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: ['css-loader', 'sass-loader']
+        })
       }
     ]
   },
@@ -52,6 +61,11 @@ module.exports = {
         collapseWhitespace: true
       },
       template: configProject.htmlTemplate.homePage
+    }),
+    new ExtractTextPlugin({
+      filename: configProject.cssName,
+      disable: false,
+      allChunks: true
     }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin()

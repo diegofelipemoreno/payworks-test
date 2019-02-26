@@ -29,3 +29,33 @@ export const requestAnimationUtil = (func, timeCallback) => {
 
   window.requestAnimationFrame(visibleStep_);
 };
+
+
+/**
+* Loads scss
+* @param {array} arrayUrl scss
+* @return {Promise}
+*/
+export function loadAsset(arrayUrl) {
+  return Promise.all(arrayUrl.map((url) => {
+    return new Promise((resolve, reject) => {
+      let request = new XMLHttpRequest();
+
+      request.open('GET', url);
+      request.send('');
+      request.onreadystatechange = () => {
+        if (request.status === 200) {
+          try {
+            let result = JSON.parse(request.response) || {};
+
+            resolve(result);
+          } catch (e) {
+            console.warn(e);
+          }
+        } else {
+          reject();
+        }
+      };
+    });
+  }));
+}

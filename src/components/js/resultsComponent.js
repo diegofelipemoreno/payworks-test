@@ -1,3 +1,6 @@
+import {PaginatorComponent} from './paginatorComponent.js';
+
+
 /**
  * Results Component
  */
@@ -15,6 +18,11 @@ export class ResultsComponent {
      * type data attribute to filter render results
      */
     this.filterBy = [];
+
+    /**
+     * paginator component
+     */
+    this.paginator = new PaginatorComponent('[paginator-component]');
   }
 
   /**
@@ -40,27 +48,32 @@ export class ResultsComponent {
           elem.languages_url.forEach((elem) => {
             languagesList +=
               `<li>
-              <h3>${elem}</h3>
+              <span>${elem}</span>
             </li>`;
           });
         }
 
         listProject +=
-          `<li>
+          `<li class="js-project">
           <a href="${urlBranch}"
           rel="noopener" target="_blank">
             ${elem.name}
           </a>
           <span>Forks: ${elem.forks_count}</span>
           <span>Stars: ${elem.stargazers_count}</span>
-          <ul>
-            ${languagesList}
-          </ul>
+          <br>
+          <div>
+            <div>Languages:</div>
+            <ul>
+              ${languagesList}
+            </ul>
+          </div>
         </li>`;
       });
     }
 
     this.element.innerHTML += listProject;
+    this.paginator.render();
   }
 
   /**

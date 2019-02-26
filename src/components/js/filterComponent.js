@@ -1,6 +1,8 @@
 import {FilterAttributes} from './searchComponent.js';
 import {ResultsComponent} from './resultsComponent.js';
 
+import * as utils from '../../utils.js';
+
 /**
  * Filter Component
  */
@@ -65,31 +67,33 @@ export class FilterComponent {
         }
       });
 
-      filteredData = this.currentData.filter((elem) => {
-        let isMatch = false;
-
+      this.currentData.filter((elem) => {
         elem.languages_url.forEach((langElem) => {
           languagesToFilter.forEach((langFil) => {
             if (langElem === langFil) {
-              isMatch = true;
+              filteredData.push(elem);
             }
           });
         });
-
-        if (isMatch) {
-          return elem;
-        }
       });
 
       this.results.render(filteredData);
     };
 
     /**
-    * Filter current Data by forks asc
+    * Filter current Data by forks numbers
+    * @param {string} idForm to filter data
     */
-    const filterByForks_ = () => {
-      let filteredData =
-       this.currentData.sort((a, b) => b.forks_count - a.forks_count);
+    const filterByForks_ = (idForm) => {
+      const filterInput = this.filterForm.querySelector(
+        `#${idForm} ${Selectors.INPUT_FILTER}`);
+      let forksNumber = filterInput.value || 0,
+        filteredData = [];
+
+      forksNumber = parseInt(forksNumber);
+      filteredData = this.currentData.filter((elem) => {
+        return elem.forks_count === forksNumber;
+      });
 
       this.results.render(filteredData);
     };
@@ -99,7 +103,7 @@ export class FilterComponent {
         filterByLanguages_(FilterAttributes.LANGUAGES);
         break;
       case FilterAttributes.FORKS:
-        filterByForks_();
+        filterByForks_(FilterAttributes.FORKS);
         break;
     }
   }
@@ -113,50 +117,70 @@ export class FilterComponent {
   }
 
   /**
+    * Resets render controls markup
+    * @private
+    */
+  resetControls_() {
+    this.filterForm.innerHTML = '';
+  }
+
+  /**
   * render form to filter data by:
   * @param {string} filterByAttr Attribute to filter by
   * @param {set} filterByData data to filter
   */
   setControlFilter(filterByAttr, filterByData) {
-    let byLanguage =
+    new Promise((resolve) => {
+      this.resetControls_();
+      utils.requestAnimationUtil(() => resolve(), 100);
+    }).then(() => {
+      let byLanguage =
       `<form id="${filterByAttr}">
-          <label>Filter by ${filterByAttr}</label>
+          <label for="${filterByAttr}">
+            Filter by ${filterByAttr}
+          </label>
         <br>`;
 
-    /**
-    * render filter for languages:
-    */
-    const renderLanguagues_ = () => {
-      filterByData.forEach((elem) => {
-        byLanguage +=
-          `<input class="${Classname.INPUT_FILTER}" 
-        type="checkbox" 
-        name="${elem}" 
-        value="${elem}">${elem}<br>`;
-      });
+      /**
+      * render filter for languages:
+      * @private
+      */
+      const renderFormLanguagues_ = () => {
+        filterByData.forEach((elem) => {
+          byLanguage +=
+            `<input class="${Classname.INPUT_FILTER}"
+          type="checkbox"
+          name="${elem}"
+          value="${elem}">${elem}<br>`;
+        });
 
-      byLanguage += '<button type="submit">filter</button><form><br><hr>';
+        byLanguage += '<button type="submit">filter</button><form><br><hr>';
 
-      this.filterForm.innerHTML += byLanguage;
-    };
+        this.filterForm.innerHTML += byLanguage;
+      };
 
-    /**
-    * render filter for forks by number:
-    */
-    const renderForks_ = () => {
-      byLanguage += '<button type="submit">filter</button><form><br><hr>';
+      /**
+      * render filter for forks by number:
+      * @private
+      */
+      const renderFromForks_ = () => {
+        byLanguage += `<input class="${Classname.INPUT_FILTER}" type="number"
+                        name="forks"
+                        value=""/><br>
+        <button type="submit">filter</button><form><br><hr>`;
 
-      this.filterForm.innerHTML += byLanguage;
-    };
+        this.filterForm.innerHTML += byLanguage;
+      };
 
-    switch (filterByAttr) {
-      case FilterAttributes.LANGUAGES:
-        renderLanguagues_();
-        break;
-      case FilterAttributes.FORKS:
-        renderForks_();
-        break;
-    }
+      switch (filterByAttr) {
+        case FilterAttributes.LANGUAGES:
+          renderFormLanguagues_();
+          break;
+        case FilterAttributes.FORKS:
+          renderFromForks_();
+          break;
+      }
+    });
   }
 
 

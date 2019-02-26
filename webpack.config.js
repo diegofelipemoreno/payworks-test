@@ -4,13 +4,13 @@ const webpack = require('webpack'),
 
   configProject = {
     entryJs: {
-      app: './src/index.js',
+      app: './src/index.js'
     },
     publicPath: 'dist',
     portServer: 3000,
     cssName: '[name].css',
     htmlTemplate: {
-      homePage: './src/index.html',
+      homePage: './src/index.html'
     }
   };
 
@@ -37,7 +37,7 @@ module.exports = {
     contentBase: path.join(__dirname, configProject.publicPath),
     port: configProject.portServer,
     compress: true,
-    hot: true, 
+    hot: true,
     stats: 'errors-only',
     historyApiFallback: {
       index: 'dist/index.html'
@@ -53,7 +53,7 @@ module.exports = {
       },
       template: configProject.htmlTemplate.homePage
     }),
-    new webpack.HotModuleReplacementPlugin(), // enable HMR globally
+    new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin()
   ]
 };

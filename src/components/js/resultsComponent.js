@@ -32,6 +32,8 @@ export class ResultsComponent {
       listProject = '<h3>No Results</h3>';
     } else {
       dataToRender.forEach((elem) => {
+        const urlBranch =
+          `${elem.login_html_url}/${elem.name}${Constants.SUFFIX_BRANCHES}`;
         let languagesList = '';
 
         if (elem.languages_url) {
@@ -45,7 +47,7 @@ export class ResultsComponent {
 
         listProject +=
           `<li>
-          <a href="${elem.login_html_url}/${elem.name}"
+          <a href="${urlBranch}"
           rel="noopener" target="_blank">
             ${elem.name}
           </a>
@@ -68,4 +70,11 @@ export class ResultsComponent {
     this.render();
   }
 }
+
+/**
+ * Constants
+ */
+const Constants = {
+  SUFFIX_BRANCHES: '/branches'
+};
 

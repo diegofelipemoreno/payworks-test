@@ -2,7 +2,6 @@ import {FilterComponent} from './filterComponent.js';
 import {ResultsComponent} from './resultsComponent.js';
 
 import {makeRequest} from '../../service.js';
-import {smokeData} from '../../smoke-data.js';
 import * as utils from '../../utils.js';
 
 /**
@@ -61,12 +60,14 @@ export class SearchComponent {
   * @return {object} requestData
   */
   requestOrg(orgName) {
-    const urlQuery =
-      `${Constants.PREFIX_API_GITHUB}${orgName}${Constants.SUFFIX_API_REPO}`;
+    const urlQuery = `${Constants.PREFIX_API_GITHUB}${orgName}`,
+      querySuffix = `${Constants.SUFFIX_API_REPO}${Constants.SUFFIX_TOKENS}`;
 
-    return makeRequest('GET', urlQuery).then((requestData) => {
-      return requestData;
-    }).catch((err) => {
+
+    return makeRequest('GET', `${urlQuery}${querySuffix}`).then(
+      (requestData) => {
+        return requestData;
+      }).catch((err) => {
       console.error('Augh, there was an error!', err.statusText);
 
       return [];
@@ -79,7 +80,9 @@ export class SearchComponent {
   * @return {object} requestData
   */
   requestLanguageProject_(urlQuery) {
-    return makeRequest('GET', urlQuery).then((requestData) => {
+    const fullQuery = `${urlQuery}${Constants.SUFFIX_TOKENS}`;
+
+    return makeRequest('GET', fullQuery).then((requestData) => {
       return requestData;
     }).catch((err) => {
       console.error('Augh, there was an error!', err.statusText);
@@ -94,26 +97,28 @@ export class SearchComponent {
   listenEvents() {
     this.orgForm.addEventListener(Events.SUBMIT, (event) => {
       event.preventDefault();
-      /*
-      this.requestOrg(this.formInput.value).then((result) => {
-        this.dataOrg = result;
-      });
-      */
-      this.dataOrg = smokeData;
 
-      new Promise((resolve) => {
-        this.filterDataToRender_();
-        resolve();
-      }).then(() => {
-        utils.requestAnimationUtil(() => {
-          this.filter.setData(this.dataToRender);
-          this.results.render(this.dataToRender);
-          this.assignFiltersControl([
-            [FilterAttributes.LANGUAGES, this.languagesOrg],
-            [FilterAttributes.FORKS]
-          ]);
-        }, 400);
-      });
+      if (this.formInput.value) {
+        this.requestOrg(this.formInput.value).then((result) => {
+          this.dataOrg = result;
+
+          new Promise((resolve) => {
+            this.filterDataToRender_();
+            resolve();
+          }).then(() => {
+            utils.requestAnimationUtil(() => {
+              if (this.dataToRender.length) {
+                this.filter.setData(this.dataToRender);
+                this.results.render(this.dataToRender);
+                this.assignFiltersControl([
+                  [FilterAttributes.LANGUAGES, this.languagesOrg],
+                  [FilterAttributes.FORKS]
+                ]);
+              }
+            }, 400);
+          });
+        });
+      }
     });
   }
 
@@ -122,7 +127,10 @@ export class SearchComponent {
   * @private
   */
   filterDataToRender_() {
-    if (this.dataOrg) {
+    this.dataOrg = JSON.parse(this.dataOrg);
+    this.languagesOrg = new Set();
+
+    if (this.dataOrg.length) {
       this.dataToRender = this.dataOrg.reduce((previous, actual) => {
         let currentProject = {};
 
@@ -133,7 +141,6 @@ export class SearchComponent {
           name: actual.name,
           stargazers_count: actual.stargazers_count
         };
-/*
 
         this.requestLanguageProject_(actual.languages_url).then((result) => {
           const stringToObject = JSON.parse(result);
@@ -145,19 +152,6 @@ export class SearchComponent {
               return index;
             });
         });
-*/
-
-        let result = {
-          'JavaScript': 16994,
-          'HTML': 10774
-        };
-
-        currentProject['languages_url'] =
-          Object.keys(result).map((index) => {
-            this.languagesOrg.add(index);
-
-            return index;
-          });
 
         return previous.concat(currentProject);
       }, []).sort((a, b) => b.stargazers_count - a.stargazers_count);
@@ -196,12 +190,22 @@ export const FilterAttributes = {
 
 
 /**
+ * Tokens
+ */
+const Tokens = {
+  CLIENT_ID: '?client_id=aeecd304f54029b1c06b',
+  CLIENT_SECRET: '&client_secret=957d97f8488f9b323952eb55f7c1c1e2dbf2c900'
+};
+
+
+/**
  * Constants
  */
 const Constants = {
   PREFIX_API_GITHUB: 'https://api.github.com/users/',
+  SUFFIX_API_LANGUAGE: '/languages',
   SUFFIX_API_REPO: '/repos',
-  SUFFIX_API_LANGUAGE: '/languages'
+  SUFFIX_TOKENS: `${Tokens.CLIENT_ID}${Tokens.CLIENT_SECRET}`
 };
 
 
